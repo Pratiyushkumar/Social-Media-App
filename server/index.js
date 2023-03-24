@@ -11,7 +11,16 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 /**-------All the imports of files-------*/
-import { register } from "./controllers/auth.js";
+import { register } from "./controllers/auth.controller.js";
+
+import authRoutes from "./routes/auth.routes.js";
+import userRoutes from "./routes/users.routes.js";
+import postsRoutes from "./routes/posts.routes.js";
+import { verifyToken } from "./middleware/auth.middleware.js";
+import { createPosts } from "./controllers/posts.controller.js";
+import User from "./models/User.js";
+import Post from "./models/Post.js";
+import { users, posts } from "./data/index.js ";
 
 /**-------CONFIGURATIONS--------*/
 const __filename = fileURLToPath(import.meta.url);
@@ -43,6 +52,11 @@ const upload = multer({ storage });
 
 /**-------ROUTES WITH FILES--------*/
 app.post("/auth/register", upload.single("picture"), register);
+app.post("/posts", verifyToken, upload.single("picture"), createPosts);
+/**-------ROUTES--------*/
+app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
+app.use("/posts", postsRoutes);
 
 /**-------MONGOOSE SETUP--------*/
 const PORT = process.env.PORT || 6001;
@@ -53,5 +67,9 @@ mongoose
   })
   .then(() => {
     app.listen(PORT, () => console.log(`Server port: ${PORT}`));
+
+    /**-------Add Data one time-------- */
+    // User.insertMany(users);
+    // Post.insertMany(posts);
   })
   .catch((error) => console.log(`${error} did not connect`));
